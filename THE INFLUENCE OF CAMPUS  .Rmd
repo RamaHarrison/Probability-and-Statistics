@@ -1,0 +1,388 @@
+---
+title: "UAS"
+author: "Kelompok_1"
+date: "2024-05-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl) 
+library(nortest) 
+library(ggplot2)
+library(dplyr)
+library(lmtest)
+library(tidyverse)
+library(stats)
+library(corrplot)
+
+
+data <- read_xlsx("C:/Users/Jonathan/OneDrive/Dokumen/Joe/UMN/Probabilty and Statistic Semester 2/Pengaruh_Perkuliahan_Mahasiswa_terhadap_Intensitas_Kunjungan_ke_Pusat_Kebugaran_(Jawaban).xlsx")
+```
+
+```{r}
+#1. Jenis Kelamin
+jenis_kelamin_count <- data %>%
+  count(`Jenis kelamin`)
+
+ggplot(jenis_kelamin_count, aes(x = "", y = n, fill = `Jenis kelamin`)) + 
+  geom_bar(width = 1, stat = "identity") + 
+  coord_polar("y", start = 0) + 
+  geom_text(aes(label = paste0(round(n), " (", round(n/sum(n)*100), "%)")), position = position_stack(vjust = 0.5)) + 
+  labs(fill = "Jenis Kelamin", title = "Distribution of Jenis Kelamin") + 
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5, color = "#666666"))
+```
+
+```{r}
+#2. Umur
+age <- data$`Umur Sekarang (Cth: 18)`
+age_freq <- table(age)
+color_vector <- c("red", "green", "blue", "orange", "purple", "pink", "grey")
+ggplot(data.frame(age = names(age_freq), freq = as.numeric(age_freq)), aes(x = age, y = freq)) + 
+  geom_bar(stat = "identity", fill = color_vector) + 
+  labs(title = "Bar Plot of Age Frequency",
+       x = "Age",
+       y = "Frequency")
+```
+
+```{r}
+#3. Semester
+frekuensi <- table(data$Semester)
+color_vector <- c("red", "green", "blue", "orange", "purple", "pink")
+ggplot(data.frame(Semester = names(frekuensi), Frequency = as.numeric(frekuensi)), aes(x = Semester, y = Frequency)) + 
+  geom_bar(stat = "identity", fill = color_vector) + 
+  labs(title = "Bar Plot of Semester Frequency",
+       x = "Semester",
+       y = "Frequency")
+```
+
+```{r}
+#4. BERAT BADAN
+frekuensi <- table(data$beratBadan)
+ggplot(data.frame(beratBadan = names(frekuensi), Frequency = as.numeric(frekuensi)), aes(x = beratBadan, y = Frequency)) + 
+  geom_bar(stat = "identity", fill = sample(colors(), length(frekuensi))) + 
+  labs(title = "Bar Plot of Berat Badan Frequency",
+       x = "Berat Badan (KG)",
+       y = "Frequency")
+```
+
+```{r}
+#5. Tinggi Badan
+tinggiBadan_freq <- table(data$tinggiBadan)
+df_tinggiBadan <- as.data.frame(tinggiBadan_freq)
+names(df_tinggiBadan) <- c("tinggiBadan", "jumlah_orang")
+ggplot(df_tinggiBadan, aes(x = as.factor(tinggiBadan), y = jumlah_orang, fill = (tinggiBadan))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Jumlah Orang Berdasarkan Tinggi Badan",
+       x = "Tinggi Badan (cm)",
+       y = "Jumlah Orang") +
+  scale_fill_viridis_d() + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+```{r}
+#6. Matakuliah
+jumlahMatkul_freq <- table(data$jumlahMatkul)
+ggplot(df, aes(x = as.factor(jumlahMatkul), y = jumlah_orang, fill = (jumlahMatkul))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Jumlah Mata Kuliah",
+       x = "Jumlah Mata Kuliah",
+       y = "Jumlah Orang") +
+  scale_fill_viridis_d() +  # Gunakan palet warna viridis
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 1, hjust = 1))
+```
+
+```{r}
+#7. Organisasi
+jumlahKegiatan_freq <- table(data$jumlahKegiatan)
+df_jumlahKegiatan <- as.data.frame(jumlahKegiatan_freq)
+names(df_jumlahKegiatan) <- c("jumlahKegiatan", "jumlah_orang")
+
+ggplot(df_jumlahKegiatan, aes(x = as.factor(jumlahKegiatan), y = jumlah_orang, fill = (jumlahKegiatan))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Jumlah Orang Berdasarkan Jumlah Kegiatan",
+       x = "Jumlah Kegiatan",
+       y = "Jumlah Orang") +
+  scale_fill_viridis_d() +  # Gunakan palet warna viridis
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 1, hjust = 1))
+
+```
+
+```{r}
+#8.  Lama Berlangganan Gym
+lamaGymBulan_freq <- table(data$lamaGymBulan)
+df_lamaGymBulan <- as.data.frame(lamaGymBulan_freq)
+names(df_lamaGymBulan) <- c("lamaGymBulan", "jumlah_orang")
+ggplot(df_lamaGymBulan, aes(x = as.factor(lamaGymBulan), y = jumlah_orang, fill = as.factor(lamaGymBulan))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Lama Berlangganan Gym (Bulan)",
+       x = "Lama Berlangganan Gym (Bulan)",
+       y = "Jumlah Orang") +
+  scale_fill_viridis_d() +  # Gunakan palet warna viridis
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+```{r}
+#9.  Intensitas gym
+frekuensiGymSeminggu_freq <- table(data$frekuensiGymSeminggu)
+df_frekuensiGymSeminggu <- as.data.frame(frekuensiGymSeminggu_freq)
+names(df_frekuensiGymSeminggu) <- c("frekuensiGymSeminggu", "jumlah_orang")
+
+ggplot(df_frekuensiGymSeminggu, aes(x = as.factor(frekuensiGymSeminggu), y = jumlah_orang, fill = (frekuensiGymSeminggu))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Frekuensi Kunjungan Gym dalam Seminggu",
+       x = "Jumlah Kunjungan",
+       y = "Jumlah Responden") +
+  scale_fill_viridis_d() +  # Gunakan palet warna viridis
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 1, hjust = 1))
+```
+
+```{r}
+#10 Distribusi Durasi gym
+durasiGym_freq <- table(data$durasiGym)
+df_durasiGym <- as.data.frame(durasiGym_freq)
+names(df_durasiGym) <- c("durasiGym", "jumlah_orang")
+
+ggplot(df_durasiGym, aes(x = as.factor(durasiGym), y = jumlah_orang, fill = (durasiGym))) +
+  geom_bar(stat = "identity") +
+  labs(title = "Durasi Responden Menggunakan Gym",
+       x = "Durasi (Menit)",
+       y = "Jumlah Responden") +
+  scale_fill_viridis_d() +  # Gunakan palet warna viridis
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+#11.Distribusi Jarak
+ggplot(data, aes(x=1:nrow(data), y=as.numeric(gsub(",", ".", jarakGym)))) +
+  geom_point(size=3) +  
+  labs(title="Jarak rumah dengan gym", x="Responden", y="Jarak (km)") +
+  theme_bw()
+```
+
+```{r}
+#12. Distribusi Harga
+barplot(table(data$hargaMemberGym), 
+        main="Harga Membership Gym",
+        xlab="Ribu rupiah",
+        ylab="Jumlah responden")
+```
+
+
+
+```{r}
+# Normality Test
+# 1. Umur
+(frekuensi<- table(data$`Umur Sekarang (Cth: 18)`))
+shapiro.test(data$`Umur Sekarang (Cth: 18)`)
+ggplot(data, aes(x = data$`Umur Sekarang (Cth: 18)`)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Umur",
+       x = "Umur",
+       y = "Density")
+summary(data$`Umur Sekarang (Cth: 18)`)
+sd(data$`Umur Sekarang (Cth: 18)`)
+```
+```{r}
+# 2. Semester
+(frekuensi<- table(data$Semester))
+shapiro.test(data$Semester)
+ggplot(data, aes(x = data$Semester)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Semester",
+       x = "Semester",
+       y = "Density")
+summary(data$Semester)
+sd(data$Semester)
+```
+```{r}
+# 3. Frekuensi Gym dalam Seminggu
+(frekuensi<- table(data$frekuensiGymSeminggu))
+shapiro.test(data$frekuensiGymSeminggu)
+ggplot(data, aes(x = data$frekuensiGymSeminggu)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Frekuensi Gym dalam Seminggu",
+       x = "Kunjungan ke Gym dalam Seminggu",
+       y = "Density")
+summary(data$frekuensiGymSeminggu)
+sd(data$frekuensiGymSeminggu)
+```
+```{r}
+# 4. Berat Badan
+(frekuensi<- table(data$beratBadan))
+shapiro.test(data$beratBadan)
+ggplot(data, aes(x = data$beratBadan)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Berat Badan",
+       x = "Berat Badan",
+       y = "Density")
+summary(data$beratBadan)
+sd(data$beratBadan)
+```
+```{r}
+# 5. tinggi Badan
+(frekuensi<- table(data$tinggiBadan))
+shapiro.test(data$tinggiBadan)
+ggplot(data, aes(x = data$tinggiBadan)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Tinggi Badan",
+       x = "Berat Badan",
+       y = "Density")
+summary(data$tinggiBadan)
+sd(data$tinggiBadan)
+```
+```{r}
+# 6. jumlah mata kuliah
+(frekuensi<- table(data$jumlahMatkul))
+shapiro.test(data$jumlahMatkul)
+ggplot(data, aes(x = data$jumlahMatkul)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Jumlah Matkul",
+       x = "Jumlah Mata Kuliah",
+       y = "Density")
+summary(data$jumlahMatkul)
+sd(data$jumlahMatkul)
+```
+```{r}
+# 7. jumlah kegiatan
+(frekuensi<- table(data$jumlahKegiatan))
+shapiro.test(data$jumlahKegiatan)
+ggplot(data, aes(x = data$jumlahKegiatan)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Jumlah Kegiatan",
+       x = "Jumlah Mata Kuliah",
+       y = "Density")
+summary(data$jumlahKegiatan)
+sd(data$jumlahKegiatan)
+```
+```{r}
+# 8. durasi gym
+(frekuensi<- table(data$durasiGym))
+shapiro.test(data$durasiGym)
+ggplot(data, aes(x = data$durasiGym)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Durasi Gym",
+       x = "Durasi Gym",
+       y = "Density")
+summary(data$durasiGym)
+sd(data$durasiGym)
+```
+```{r}
+# 9. jarak gym
+(frekuensi<- table(data$jarakGym))
+shapiro.test(data$jarakGym)
+ggplot(data, aes(x = data$jarakGym)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Jarak Gym",
+       x = "Jarak Gym",
+       y = "Density")
+summary(data$jarakGym)
+sd(data$jarakGym)
+```
+```{r}
+# 10. lama gym
+(frekuensi<- table(data$lamaGymBulan))
+shapiro.test(data$lamaGymBulan)
+ggplot(data, aes(x = data$lamaGymBulan)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Lama Gym (Bulan)",
+       x = "Lama Gym (Bulan)",
+       y = "Density")
+summary(data$lamaGymBulan)
+sd(data$lamaGymBulan)
+```
+```{r}
+# Untuk hargaGym menggunakan tes kolmogorov-smirnov
+standardized_data <- (data$hargaMemberGym - mean(data$hargaMemberGym)) / sd(data$hargaMemberGym)
+ks_test_result <- ks.test(standardized_data, "pnorm", mean=0, sd=1)
+print("Kolmogorov-Smirnov Test Result on hargaMemberGym:")
+print(ks_test_result)
+data$price_bucket <- cut(data$hargaMemberGym, breaks = c(0, 200000, 400000, 600000, 800000, 1000000), labels = FALSE)
+ggplot(data, aes(x = price_bucket)) +
+  geom_density(fill = "skyblue", alpha = 0.7) +
+  labs(title = "Density Plot of Lama Gym (Bulan)",
+       x = "Price Bucket",
+       y = "Density")
+```
+
+
+```{r}
+# Hipotesis 1: apakah kesibukan perkuliahan memengaruhi intensitas kunjungan ke pusat kebugaran
+# Variabel yang diuji: jumlahKegiatan(independen) & jumlahGymSeminggu(dependen)
+# Chi-Square Test
+# Create a contingency table
+contingency_table <- table(data$frekuensiGymSeminggu, data$jumlahKegiatan)
+print(contingency_table)
+chisq.test(contingency_table)
+```
+
+```{r}
+# Hipotesis 2: apakah ada perbedaan intensitas kunjungan ke pusat kebugaran antara mahasiswa yang aktif dan tidak aktif dalam perkuliahan
+# Variabel yang diuji: jumlahKegiatan(independen), jumlahMatkul(independen), & jumlahGymSeminggu(dependen)
+# Multiple Regression
+reg_model <- lm(frekuensiGymSeminggu ~ jumlahKegiatan + jumlahMatkul, data=data)
+summary(reg_model)
+dwtest(reg_model)
+```
+
+```{r}
+# Hipotesis 3: Apakah jarak pusat kebugaran memengaruhi intensitas mahasiswa berkunjung ke pusat kebugaran
+# Variabel yang diuji: jarakGym (independen) & jumlahGymSeminggu (dependen)
+# uji linear regression
+contingency_table2 <- table(data$frekuensiGymSeminggu, data$jarakGym)
+print(contingency_table2)
+chisq.test(contingency_table2)
+```
+
+```{r}
+# Hipotesis 4: Apakah semester perkuliahan memengaruhi intensitas mahasiswa ke pusat kebugaran secara signifikan
+# Variabel yang diuji: semester(independen)& frekuensiGymSeminggu (dependen)
+# Anova Test
+
+anovaHipotesis4 <- aov(frekuensiGymSeminggu ~ Semester, data = data)
+summary(anovaHipotesis4)
+```
+```{r}
+# Hipotesis 5: Apakah jumlah mata kuliah berpengaruh terhadap intensitas kunjungan mahasiswa ke pusat kebugaran
+# Variabel yang diuji: jumlahMatkul (independen) & frekuensiGymSeminggu (dependen)
+# Anova Test
+
+anovaHipotesis5 <- aov(frekuensiGymSeminggu ~ jumlahMatkul, data = data)
+summary(anovaHipotesis5)
+```
+```{r}
+# Hipotesis 6: apakah jumlah kegiatan yang diikuti mahasiswa berpengaruh terhadap intensitas kunjungan mahasiswa ke pusat kebugaran
+# Variabel yang diuji: jumlahKegiatan(independen) & jumlahGymSeminggu (dependen)
+
+
+# Membuat kategori antara jumlahKegiatan = 0 dan jumlahKegiatan > 0
+data$jumlahKegiatan_binary <- ifelse(data$jumlahKegiatan == 0, 0, 1)
+
+# T test
+t_test_results <- t.test(frekuensiGymSeminggu ~ jumlahKegiatan_binary, data = data)
+print(t_test_results)
+```
+
+```{r}
+# Hipotesis 7: Apakah berat badan mahasiswa memiliki pengaruh signifikan terhadap lamanya mahasiswa memulai pergi ke pusat kebugaran.
+# Variabel yang diuji: beratBadan (independen) & lamaGym (dependen)
+# Uji linear regression
+
+reg_model2 <- lm(lamaGymBulan ~ beratBadan, data=data)
+summary (reg_model)
+ggplot(data, aes(x = lamaGymBulan, y = beratBadan)) + 
+  geom_point() +
+  geom_smooth(method = 'lm', col = 'purple')
+dwtest(reg_model2)
+
+```
